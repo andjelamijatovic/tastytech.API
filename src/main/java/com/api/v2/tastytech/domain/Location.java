@@ -1,0 +1,144 @@
+package com.api.v2.tastytech.domain;
+
+import jakarta.persistence.*;
+
+import java.util.Date;
+import java.util.Objects;
+
+@Entity
+@Table(name = "location")
+public class Location {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    private Date createdAt;
+    private Date updatedAt;
+    private String name;
+    private String description;
+    private Double longitude;
+    private Double latitude;
+    private String phone;
+    private String address;
+    @ManyToOne
+    @JoinColumn(name = "brand_id")
+    private Brand brand;
+
+    public Location() {
+    }
+
+    public Location(Long id, Date createdAt, Date updatedAt, String name, String description, Double longitude,
+                    Double latitude, String phone, String address, Brand brand) {
+        this.id = id;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+        this.name = name;
+        this.description = description;
+        this.longitude = longitude;
+        this.latitude = latitude;
+        this.phone = phone;
+        this.address = address;
+        this.brand = brand;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Date getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Date createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public Date getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(Date updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public Double getLongitude() {
+        return longitude;
+    }
+
+    public void setLongitude(Double longitude) {
+        this.longitude = longitude;
+    }
+
+    public Double getLatitude() {
+        return latitude;
+    }
+
+    public void setLatitude(Double latitude) {
+        this.latitude = latitude;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public Brand getBrand() {
+        return brand;
+    }
+
+    public void setBrand(Brand brand) {
+        this.brand = brand;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Location location)) return false;
+        return Objects.equals(id, location.id)
+                && Objects.equals(createdAt, location.createdAt)
+                && Objects.equals(updatedAt, location.updatedAt)
+                && Objects.equals(name, location.name)
+                && Objects.equals(description, location.description)
+                && Objects.equals(longitude, location.longitude)
+                && Objects.equals(latitude, location.latitude)
+                && Objects.equals(phone, location.phone)
+                && Objects.equals(address, location.address)
+                && Objects.equals(brand, location.brand);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, createdAt, updatedAt, name, description, longitude, latitude, phone, address, brand);
+    }
+}
