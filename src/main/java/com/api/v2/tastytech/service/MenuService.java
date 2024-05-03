@@ -1,0 +1,15 @@
+package com.api.v2.tastytech.service;
+
+import com.api.v2.tastytech.dto.MenuInputDto;
+import com.api.v2.tastytech.dto.MenuOutputDto;
+
+import java.util.List;
+
+public interface MenuService {
+
+    MenuOutputDto save(MenuInputDto menuDto) throws Exception;
+    List<MenuOutputDto> getAll(Long id) throws Exception;
+    MenuOutputDto getById(Long id) throws Exception;
+    MenuOutputDto update(Long id, MenuInputDto menuDto) throws Exception;
+    void delete(Long id) throws Exception;
+}
