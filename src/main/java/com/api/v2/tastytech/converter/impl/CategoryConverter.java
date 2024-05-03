@@ -5,6 +5,7 @@ import com.api.v2.tastytech.domain.Category;
 import com.api.v2.tastytech.domain.CategoryTranslation;
 import com.api.v2.tastytech.dto.CategoryInputDto;
 import com.api.v2.tastytech.dto.CategoryOutputDto;
+import com.api.v2.tastytech.dto.CategoryTranslationInputDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -19,6 +20,8 @@ public class CategoryConverter implements DtoEntityConverter<CategoryInputDto, C
 
     @Autowired
     private CategoryTranslationConverter categoryTranslationConverter;
+    @Autowired
+    private ItemConverter itemConverter;
     private final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     @Override
@@ -34,15 +37,19 @@ public class CategoryConverter implements DtoEntityConverter<CategoryInputDto, C
                         .map(translation -> categoryTranslationConverter.toDto(translation))
                         .collect(Collectors.toList()))
                         : null,
-                    null);
+//                null);
+                (entity.getItems() != null)
+                        ? (entity.getItems().stream().map(item -> itemConverter.toDto(item)).collect(Collectors.toList()))
+                        : null);
     }
 
     @Override
     public Category toEntity(CategoryInputDto input) throws Exception {
-
-        // TODO: add logic to transform CategoryTranslation
         List<CategoryTranslation> translations = new ArrayList<>();
-
+        for (CategoryTranslationInputDto tr : input.getTranslations()) {
+            CategoryTranslation translation = categoryTranslationConverter.toEntity(tr);
+            translations.add(translation);
+        }
         return new Category(
                 null,
                 input.getName(),
