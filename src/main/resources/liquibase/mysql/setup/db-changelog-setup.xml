@@ -1,0 +1,86 @@
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
+
+    <!-- CREATE TABLE brand -->
+    <changeSet id="create-brand" author="andjela">
+        <sqlFile path="ddl/create-brand.sql" relativeToChangelogFile="true"/>
+    </changeSet>
+
+    <!-- CREATE TABLE location -->
+    <changeSet id="create-location" author="andjela">
+        <sqlFile path="ddl/create-location.sql" relativeToChangelogFile="true"/>
+    </changeSet>
+
+    <!-- CREATE TABLE menu -->
+    <changeSet id="create-menu" author="andjela">
+        <sqlFile path="ddl/create-menu.sql" relativeToChangelogFile="true"/>
+    </changeSet>
+
+    <!-- CREATE TABLE menu_category -->
+    <changeSet id="create-menu-category" author="andjela">
+        <sqlFile path="ddl/create-menu-category.sql" relativeToChangelogFile="true"/>
+    </changeSet>
+
+    <!-- CREATE TABLE language -->
+    <changeSet id="create-language" author="andjela">
+        <sqlFile path="ddl/create-language.sql" relativeToChangelogFile="true"/>
+    </changeSet>
+
+    <!-- CREATE TABLE category_translation -->
+    <changeSet id="create-category-translation" author="andjela">
+        <sqlFile path="ddl/create-category-translation.sql" relativeToChangelogFile="true"/>
+    </changeSet>
+
+    <!-- CREATE TABLE menu_item -->
+    <changeSet id="create-menu-item" author="andjela">
+        <sqlFile path="ddl/create-menu-item.sql" relativeToChangelogFile="true"/>
+    </changeSet>
+
+    <!-- CREATE TABLE item_translation -->
+    <changeSet id="create-item-translation" author="andjela">
+        <sqlFile path="ddl/create-item-translation.sql" relativeToChangelogFile="true"/>
+    </changeSet>
+
+    <!-- FILL TABLE brand -->
+    <changeSet id="init-brand" author="andjela">
+        <sqlFile path="dml/init-brand.sql" relativeToChangelogFile="true"/>
+    </changeSet>
+
+    <!-- FILL TABLE location -->
+    <changeSet id="init-location" author="andjela">
+        <sqlFile path="dml/init-location.sql" relativeToChangelogFile="true"/>
+    </changeSet>
+
+    <!-- FILL TABLE menu -->
+    <changeSet id="init-menu" author="andjela">
+        <sqlFile path="dml/init-menu.sql" relativeToChangelogFile="true"/>
+    </changeSet>
+
+    <!-- FILL TABLE menu_category -->
+    <changeSet id="init-menu-category" author="andjela">
+        <sqlFile path="dml/init-menu-category.sql" relativeToChangelogFile="true"/>
+    </changeSet>
+
+    <!-- FILL TABLE language -->
+    <changeSet id="init-language" author="andjela">
+        <sqlFile path="dml/init-language.sql" relativeToChangelogFile="true"/>
+    </changeSet>
+
+    <!-- FILL TABLE category_translation -->
+    <changeSet id="init-category-translation" author="andjela">
+        <sqlFile path="dml/init-category-translation.sql" relativeToChangelogFile="true"/>
+    </changeSet>
+
+    <!-- FILL TABLE menu_item -->
+    <changeSet id="init-menu-item" author="andjela">
+        <sqlFile path="dml/init-menu-item.sql" relativeToChangelogFile="true"/>
+    </changeSet>
+
+    <!-- FILL TABLE item_translation -->
+    <changeSet id="init-item-translation" author="andjela">
+        <sqlFile path="dml/init-item-translation.sql" relativeToChangelogFile="true"/>
+    </changeSet>
+
+</databaseChangeLog>

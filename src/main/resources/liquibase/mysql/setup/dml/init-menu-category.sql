@@ -1,0 +1,22 @@
+INSERT INTO menu_category (id, name, description, created_at, updated_at, parent_category_id, menu_id)
+VALUES
+    (1, 'Starters', 'Appetizers to begin your meal', '2024-04-21 12:00:00', '2024-04-21 12:00:00', NULL, 5),
+    (2, 'Main Courses', 'Heartier dishes for a satisfying meal', '2024-04-21 12:00:00', '2024-04-21 12:00:00', NULL, 5),
+    (3, 'Desserts', 'Sweet treats to end your dining experience', '2024-04-21 12:00:00', '2024-04-21 12:00:00', NULL, 5),
+    (4, 'Coffee Specials', 'Unique and special coffee creations', '2024-04-21 12:00:00', '2024-04-21 12:00:00', NULL, 2),
+    (5, 'Tea Selections', 'A variety of teas from around the world', '2024-04-21 12:00:00', '2024-04-21 12:00:00', NULL, 2),
+    (6, 'Specialty Cocktails', 'Inventive and flavorful cocktails', '2024-04-21 12:00:00', '2024-04-21 12:00:00', NULL, 7),
+    (7, 'Mocktails', 'Refreshing non-alcoholic beverages', '2024-04-21 12:00:00', '2024-04-21 12:00:00', NULL, 7),
+    (8, 'Wines', 'Carefully selected wines from renowned vineyards', '2024-04-21 12:00:00', '2024-04-21 12:00:00', NULL, 3),
+    (9, 'Craft Beers', 'Local and international craft beers', '2024-04-21 12:00:00', '2024-04-21 12:00:00', NULL, 3),
+    (10, 'Spirits', 'Premium spirits for the discerning palate', '2024-04-21 12:00:00', '2024-04-21 12:00:00', NULL, 3),
+    (11, 'Burgers', 'Juicy and flavorful burgers', '2024-04-21 12:00:00', '2024-04-21 12:00:00', 2, 6),
+    (12, 'Sandwiches', 'Delicious sandwiches for a quick bite', '2024-04-21 12:00:00', '2024-04-21 12:00:00', 2, 6),
+    (13, 'Salads', 'Fresh and vibrant salads', '2024-04-21 12:00:00', '2024-04-21 12:00:00', 2, 6),
+    (14, 'Hot Drinks', 'Warm beverages to cozy up with', '2024-04-21 12:00:00', '2024-04-21 12:00:00', 1, 1),
+    (15, 'Cold Drinks', 'Refreshing chilled drinks', '2024-04-21 12:00:00', '2024-04-21 12:00:00', 1, 1),
+    (16, 'Dessert Platter', 'Assorted desserts for sharing', '2024-04-21 12:00:00', '2024-04-21 12:00:00', 3, 3),
+    (17, 'Cheese Board', 'A selection of fine cheeses', '2024-04-21 12:00:00', '2024-04-21 12:00:00', 3, 3),
+    (18, 'Flaming Cocktails', 'Exciting cocktails with fiery flair', '2024-04-21 12:00:00', '2024-04-21 12:00:00', 6, 7),
+    (19, 'Icy Libations', 'Chilled cocktails to cool your senses', '2024-04-21 12:00:00', '2024-04-21 12:00:00', 6, 7),
+    (20, 'Coffee Creations', 'Unique coffee blends and creations', '2024-04-21 12:00:00', '2024-04-21 12:00:00', 4, 8)
