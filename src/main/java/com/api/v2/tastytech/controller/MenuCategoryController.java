@@ -7,6 +7,10 @@ import com.api.v2.tastytech.dto.MenuOutputDto;
 import com.api.v2.tastytech.service.CategoryService;
 import com.api.v2.tastytech.service.MenuService;
 import io.swagger.v3.oas.annotations.Operation;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -77,6 +81,25 @@ public class MenuCategoryController {
     public ResponseEntity<List<CategoryOutputDto>> findAllCategories(@PathVariable("menuId") Long id) throws Exception {
         List<CategoryOutputDto> categories = categoryService.getAll(id);
         return new ResponseEntity<>(categories, HttpStatus.OK);
+    }
+
+    @Operation(summary = "GET all categories by menu's id - PAGEABLE")
+    @GetMapping("/{menuId}/paging")
+    public ResponseEntity<Page<CategoryOutputDto>> findAllCategoriesByPage(
+            @PathVariable("menuId") Long id,
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "pageSize", defaultValue = "2") int pageSize,
+            @RequestParam(name = "sortBy", defaultValue = "name") String sortBy,
+            @RequestParam(name = "sortDirection", defaultValue = "asc") String sortDirection
+    ) throws Exception {
+        Pageable pageable;
+        if (sortDirection.equals("asc")) {
+            pageable = PageRequest.of(page, pageSize, Sort.by(sortBy).ascending());
+        } else {
+            pageable = PageRequest.of(page, pageSize, Sort.by(sortBy).descending());
+        }
+        Page<CategoryOutputDto> categoryPerPage = categoryService.getAll(id, pageable);
+        return new ResponseEntity<>(categoryPerPage, HttpStatus.OK);
     }
 
     @Operation(summary = "GET category by its id")

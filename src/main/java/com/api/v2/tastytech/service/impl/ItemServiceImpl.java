@@ -12,6 +12,8 @@ import com.api.v2.tastytech.repository.ItemRepository;
 import com.api.v2.tastytech.repository.ItemTranslationRepository;
 import com.api.v2.tastytech.repository.LanguageRepository;
 import com.api.v2.tastytech.service.ItemService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -67,6 +69,17 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
+    public Page<ItemOutputDto> getAll(Long id, Pageable pageable) throws Exception {
+        Optional<Category> category = categoryRepository.findById(id);
+        if(category.isEmpty()) {
+            throw new Exception("Selected category doesn't exist!");
+        }
+        return  itemRepository
+                .findItemsByCategory(category.get(), pageable)
+                .map(itemConverter::toDto);
+    }
+
+    @Override
     public ItemOutputDto getById(Long id) throws Exception {
         Optional<Item> item = itemRepository.findById(id);
         if (item.isEmpty()) {
@@ -77,6 +90,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public ItemOutputDto update(Long id, ItemInputDto itemDto) throws Exception {
+        // TODO: implement update method for Item entity
         return null;
     }
 
