@@ -12,6 +12,8 @@ import com.api.v2.tastytech.repository.CategoryTranslationRepository;
 import com.api.v2.tastytech.repository.LanguageRepository;
 import com.api.v2.tastytech.repository.MenuRepository;
 import com.api.v2.tastytech.service.CategoryService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -82,6 +84,17 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
+    public Page<CategoryOutputDto> getAll(Long id, Pageable pageable) throws Exception {
+        Optional<Menu> menu = menuRepository.findById(id);
+        if (menu.isEmpty()) {
+            throw new Exception("Selected menu doesn't exist!");
+        }
+        return categoryRepository
+                .findCategoriesByMenu(menu.get(), pageable)
+                .map(categoryConverter::toDto);
+    }
+
+    @Override
     public CategoryOutputDto getById(Long id) throws Exception {
         Optional<Category> category = categoryRepository.findById(id);
         if (category.isEmpty()) {
@@ -92,6 +105,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public CategoryOutputDto update(Long id, CategoryInputDto categoryDto) throws Exception {
+        // TODO: implement update method of Category entity
         return null;
     }
 

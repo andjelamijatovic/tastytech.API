@@ -4,6 +4,9 @@ import com.api.v2.tastytech.dto.ItemInputDto;
 import com.api.v2.tastytech.dto.ItemOutputDto;
 import com.api.v2.tastytech.service.ItemService;
 import io.swagger.v3.oas.annotations.Operation;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -34,6 +37,19 @@ public class CategoryItemController {
     public ResponseEntity<List<ItemOutputDto>> findAllItems(@PathVariable("categoryId") Long id) throws Exception {
         List<ItemOutputDto> items = itemService.getAll(id);
         return new ResponseEntity<>(items, HttpStatus.OK);
+    }
+
+    //GET: category/{id}/paging
+    @Operation(summary = "GET all items by category's id - PAGEABLE")
+    @GetMapping("/{categoryId}/paging")
+    public ResponseEntity<Page<ItemOutputDto>> findAllItemsByPage(
+            @PathVariable("categoryId") Long id,
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "pageSize", defaultValue = "2") int pageSize
+    ) throws Exception {
+        Pageable pageable = PageRequest.of(page, pageSize);
+        Page<ItemOutputDto> itemPerPage = itemService.getAll(id, pageable);
+        return new ResponseEntity<>(itemPerPage, HttpStatus.OK);
     }
 
     //GET: category/{id}/item/{id}
