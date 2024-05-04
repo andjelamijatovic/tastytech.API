@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-@WebMvcTest(BrandControllerTests.class)
+@WebMvcTest(BrandController.class)
 public class BrandControllerTests {
 
     @MockBean
