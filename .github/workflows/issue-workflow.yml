@@ -1,0 +1,17 @@
+name: Handle Issue
+on:
+  issues:
+    types:
+      - opened
+      - reopened
+jobs:
+  output-issue:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Output issue details
+        run: |
+          echo "Issue Details"
+          echo "number: ${{ github.event.issue.number }}"
+          echo "action: ${{ github.event.action }}"
+          echo "title: ${{ github.event.issue.title }}"
+          echo "repository: ${{ github.event.issue.repository_url }}"

@@ -1,0 +1,28 @@
+name: output basic info on starting the app
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+jobs:
+  info:
+    runs-on: ubuntu-latest
+    steps:
+      # more about this context properties such as github, runner, env and job
+      # on https://docs.github.com/en/actions/learn-github-actions/contexts
+      - run: |
+          echo "Automatically triggered job by: ${{ github.event_name }}"
+      - run: |
+          echo "OS: ${{ runner.os }}"
+      - run: |
+          echo "URL: ${{ env.URL }}"
+      - run: |
+          echo "Branch: ${{ github.ref }}"
+      - run: |
+          echo "Repository: ${{ github.repository }}"
+      # https://github.com/marketplace/actions/checkout
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - run: echo "Repository ${{ github.repository }} has been cloned"
+      - run: |
+          echo "Status of job: ${{ job.status }}"
