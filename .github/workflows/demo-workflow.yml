@@ -4,10 +4,6 @@ on: workflow_dispatch
 jobs:
   test:
     runs-on: ubuntu-latest
-    services:
-      h2:
-        image: "docker://oaknd1/h2-docker:latest"
-        options: --name=h2
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
