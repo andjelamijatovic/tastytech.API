@@ -12,6 +12,7 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.dao.DataIntegrityViolationException;
 
 import java.util.*;
 
@@ -193,5 +194,18 @@ public class BrandServiceTests {
             brandService.delete(2l);
         });
         Assertions.assertEquals("Brand doesn't exist!", ex.getMessage());
+    }
+
+    @Test
+    public void deleteBrandExistAReferenceTest() throws Exception {
+        Brand dbBrand = new Brand(2l, "Coffee Shop", new Date(), new Date());
+
+        Mockito.doThrow(DataIntegrityViolationException.class).when(brandRepository).delete(dbBrand);
+        Mockito.when(brandRepository.findById(2l)).thenReturn(Optional.of(dbBrand));
+
+        Exception ex = Assertions.assertThrows(Exception.class, () -> {
+            brandService.delete(2l);
+        });
+        Assertions.assertEquals("Cannot delete brand due to existing references.", ex.getMessage());
     }
 }

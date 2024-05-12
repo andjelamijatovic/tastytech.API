@@ -6,6 +6,7 @@ import com.api.v2.tastytech.dto.BrandInputDto;
 import com.api.v2.tastytech.dto.BrandOutputDto;
 import com.api.v2.tastytech.repository.BrandRepository;
 import com.api.v2.tastytech.service.BrandService;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -72,6 +73,11 @@ public class BrandServiceImpl implements BrandService {
         if(dbBrand.isEmpty()) {
             throw new Exception("Brand doesn't exist!");
         }
-        brandRepository.delete(dbBrand.get());
+        try {
+            brandRepository.delete(dbBrand.get());
+        } catch (DataIntegrityViolationException ex) {
+            throw new Exception("Cannot delete brand due to existing references.");
+        }
     }
+
 }
