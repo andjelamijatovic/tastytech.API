@@ -1,5 +1,6 @@
 package com.api.v2.tastytech.controller;
 
+import com.api.v2.tastytech.domain.Menu;
 import com.api.v2.tastytech.dto.*;
 import com.api.v2.tastytech.service.CategoryService;
 import com.api.v2.tastytech.service.MenuService;
@@ -13,6 +14,7 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.*;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -104,6 +106,53 @@ public class MenuCategoryControllerTests {
                 new TypeReference<List<MenuOutputDto>>() {
                 });
         Assertions.assertTrue(receivedMenu.isEmpty());
+    }
+
+    @Test
+    public void getAllMenusSuccessfullyPageableTest() throws Exception {
+        Pageable pageable = PageRequest.of(0, 1, Sort.by("name").ascending());
+        BrandOutputDto brandDto = new BrandOutputDto(2l, "My Brand");
+        List<MenuOutputDto> menusDto = Arrays.asList(
+                new MenuOutputDto(9l, "kids menu", brandDto, null),
+                new MenuOutputDto(8l, "menu", brandDto, null)
+        );
+        Page<MenuOutputDto> menusPerPage = new PageImpl<>(menusDto, pageable, menusDto.size());
+
+        Mockito.when(menuService.getAll(2l, pageable)).thenReturn(menusPerPage);
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/menu/brand/{id}/paging", 2l)
+                        .param("page", "0")
+                        .param("pageSize", "1")
+                        .param("sortBy", "name")
+                        .param("sortDirection", "asc")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objMapper.writeValueAsString(menusPerPage)))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.content.length()").value(menusPerPage.getContent().size()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.totalElements").value(menusPerPage.getTotalElements()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.totalPages").value(menusPerPage.getTotalPages()));
+
+    }
+
+    @Test
+    public void getAllMenusEmptyListPageableTest() throws Exception {
+        Pageable pageable = PageRequest.of(0, 1, Sort.by("name").ascending());
+        List<MenuOutputDto> menusDto = new ArrayList<>();
+        Page<MenuOutputDto> menusPerPage = new PageImpl<>(menusDto, pageable, menusDto.size());
+
+        Mockito.when(menuService.getAll(2l, pageable)).thenReturn(menusPerPage);
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/menu/brand/{id}/paging", 2l)
+                        .param("page", "0")
+                        .param("pageSize", "1")
+                        .param("sortBy", "name")
+                        .param("sortDirection", "asc")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objMapper.writeValueAsString(menusPerPage)))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.content.length()").value(menusPerPage.getContent().size()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.totalElements").value(menusPerPage.getTotalElements()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.totalPages").value(menusPerPage.getTotalPages()));
     }
 
     @Test

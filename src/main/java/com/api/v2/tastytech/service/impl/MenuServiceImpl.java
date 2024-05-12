@@ -3,11 +3,15 @@ package com.api.v2.tastytech.service.impl;
 import com.api.v2.tastytech.converter.impl.MenuConverter;
 import com.api.v2.tastytech.domain.Brand;
 import com.api.v2.tastytech.domain.Menu;
+import com.api.v2.tastytech.dto.CategoryOutputDto;
 import com.api.v2.tastytech.dto.MenuInputDto;
 import com.api.v2.tastytech.dto.MenuOutputDto;
 import com.api.v2.tastytech.repository.BrandRepository;
 import com.api.v2.tastytech.repository.MenuRepository;
 import com.api.v2.tastytech.service.MenuService;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -51,6 +55,17 @@ public class MenuServiceImpl implements MenuService {
     }
 
     @Override
+    public Page<MenuOutputDto> getAll(Long id, Pageable pageable) throws Exception {
+        Optional<Brand> brand = brandRepository.findById(id);
+        if(brand.isEmpty()) {
+            throw new Exception("Brand doesn't exist!");
+        }
+        return menuRepository
+                .findMenusByBrand(brand.get(), pageable)
+                .map(menuConverter::toDto);
+    }
+
+    @Override
     public MenuOutputDto getById(Long id) throws Exception {
         Optional<Menu> menu = menuRepository.findById(id);
         if(menu.isEmpty()) {
@@ -77,6 +92,10 @@ public class MenuServiceImpl implements MenuService {
         if(menu.isEmpty()) {
             throw new Exception("Menu doesn't exist!");
         }
-        menuRepository.delete(menu.get());
+        try {
+            menuRepository.delete(menu.get());
+        } catch (DataIntegrityViolationException ex) {
+            throw new Exception("Cannot delete menu due to existing references.");
+        }
     }
 }

@@ -12,6 +12,8 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.*;
 
 import java.util.*;
 
@@ -60,7 +62,7 @@ public class MenuServiceTests {
     }
 
     @Test
-    public void getAllMenusSuccessfully() throws Exception {
+    public void getAllMenusSuccessfullyTest() throws Exception {
         Brand brand = new Brand(2l, "My Brand", new Date(), new Date());
         BrandOutputDto brandDto = new BrandOutputDto(2l, "My Brand");
         List<Menu> menus = Arrays.asList(
@@ -107,6 +109,69 @@ public class MenuServiceTests {
         Assertions.assertNotNull(result);
         Assertions.assertArrayEquals(new MenuOutputDto[0], result.toArray());
         Assertions.assertEquals(0, result.size());
+    }
+
+    @Test
+    public void getAllMenusSuccessfullyPageableTest() throws Exception {
+
+        Pageable pageable = PageRequest.of(0, 1, Sort.by("name").ascending());
+
+        Brand brand = new Brand(2l, "My Brand", new Date(), new Date());
+        BrandOutputDto brandDto = new BrandOutputDto(2l, "My Brand");
+        List<Menu> menus = Arrays.asList(
+                new Menu(9l, new Date(), new Date(), "kids menu", brand, null),
+                new Menu(8l, new Date(), new Date(), "menu", brand, null)
+        );
+        Page<Menu> menusPerPage = new PageImpl<>(menus, pageable, menus.size());
+        List<MenuOutputDto> menusDto = Arrays.asList(
+                new MenuOutputDto(9l, "kids menu", brandDto, null),
+                new MenuOutputDto(8l, "menu", brandDto, null)
+        );
+        Page<MenuOutputDto> menusPerPageOutput = new PageImpl<>(menusDto, pageable, menusDto.size());
+
+        Mockito.when(menuConverter.toDto(ArgumentMatchers.any(Menu.class))).thenAnswer(invocationOnMock -> {
+            Menu entity = invocationOnMock.getArgument(0);
+            return new MenuOutputDto(entity.getId(), entity.getName(), brandDto, null);
+        });
+        Mockito.when(menuRepository.findMenusByBrand(brand, pageable)).thenReturn(menusPerPage);
+        Mockito.when(brandRepository.findById(2l)).thenReturn(Optional.of(brand));
+
+
+        Page<MenuOutputDto> result = menuService.getAll(2l, pageable);
+
+        Assertions.assertNotNull(result);
+        Assertions.assertEquals(result.getTotalPages(), 2);
+        Assertions.assertEquals(result.getTotalElements(), 2);
+        Assertions.assertEquals(result.getSize(), 1);
+        Assertions.assertEquals(menusDto.get(0), result.getContent().get(0));
+    }
+
+    @Test
+    public void getAllMenusCantFindBrandPageableTest() {
+        Pageable pageable = PageRequest.of(0, 1);
+        Mockito.when(brandRepository.findById(2l)).thenReturn(Optional.empty());
+
+        Exception ex = Assertions.assertThrows(Exception.class, () -> {
+            menuService.getAll(2l, pageable);
+        });
+        Assertions.assertEquals("Brand doesn't exist!", ex.getMessage());
+    }
+
+    @Test
+    public void getAllMenusEmptyListReturnedPageableTest() throws Exception {
+        Pageable pageable = PageRequest.of(0, 1);
+        Brand brand = new Brand(2l, "My Brand", new Date(), new Date());
+        Page<Menu> menusPerPage = new PageImpl<>(new ArrayList<>(), pageable, 0);
+        Page<MenuOutputDto> menusPerPageOutput = new PageImpl<>(new ArrayList<>(), pageable, 0);
+
+        Mockito.when(menuRepository.findMenusByBrand(brand, pageable)).thenReturn(menusPerPage);
+        Mockito.when(brandRepository.findById(2l)).thenReturn(Optional.of(brand));
+
+        Page<MenuOutputDto> result = menuService.getAll(2l, pageable);
+
+        Assertions.assertNotNull(result);
+        Assertions.assertArrayEquals(menusPerPageOutput.stream().toArray(), result.getContent().toArray());
+        Assertions.assertEquals(0, result.getTotalElements());
     }
 
     @Test
@@ -255,5 +320,19 @@ public class MenuServiceTests {
             menuService.delete(7l);
         });
         Assertions.assertEquals("Menu doesn't exist!", ex.getMessage());
+    }
+
+    @Test
+    public void deleteMenuExistAReferenceTest() throws Exception {
+        Brand brand = new Brand(3l, "my brand", new Date(), new Date());
+        Menu dbMenu = new Menu(45l, new Date(), new Date(), "menu-1", brand, null);
+
+        Mockito.doThrow(DataIntegrityViolationException.class).when(menuRepository).delete(dbMenu);
+        Mockito.when(menuRepository.findById(45l)).thenReturn(Optional.of(dbMenu));
+
+        Exception ex = Assertions.assertThrows(Exception.class, () -> {
+            menuService.delete(45l);
+        });
+        Assertions.assertEquals("Cannot delete menu due to existing references.", ex.getMessage());
     }
 }

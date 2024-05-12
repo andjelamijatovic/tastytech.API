@@ -43,6 +43,25 @@ public class MenuCategoryController {
         return new ResponseEntity<>(menus, HttpStatus.OK);
     }
 
+    @Operation(summary = "GET all menus by brand's id - PAGEABLE")
+    @GetMapping("/brand/{id}/paging")
+    public ResponseEntity<Page<MenuOutputDto>> findAllMenusByPage(
+            @PathVariable("id") Long id,
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "pageSize", defaultValue = "1") int pageSize,
+            @RequestParam(name = "sortBy", defaultValue = "name") String sortBy,
+            @RequestParam(name = "sortDirection", defaultValue = "asc") String sortDirection
+    ) throws Exception {
+        Pageable pageable;
+        if (sortDirection.equals("asc")) {
+            pageable = PageRequest.of(page, pageSize, Sort.by(sortBy).ascending());
+        } else {
+            pageable = PageRequest.of(page, pageSize, Sort.by(sortBy).descending());
+        }
+        Page<MenuOutputDto> menuPerPage = menuService.getAll(id, pageable);
+        return new ResponseEntity<>(menuPerPage, HttpStatus.OK);
+    }
+
     @Operation(summary = "GET menu by its id")
     @GetMapping("/{id}")
     public ResponseEntity<MenuOutputDto> findById(@PathVariable("id") Long id) throws Exception{
