@@ -4,13 +4,11 @@ import com.api.v2.tastytech.converter.impl.ItemConverter;
 import com.api.v2.tastytech.domain.Category;
 import com.api.v2.tastytech.domain.Item;
 import com.api.v2.tastytech.domain.ItemTranslation;
-import com.api.v2.tastytech.domain.Language;
 import com.api.v2.tastytech.dto.ItemInputDto;
 import com.api.v2.tastytech.dto.ItemOutputDto;
 import com.api.v2.tastytech.repository.CategoryRepository;
 import com.api.v2.tastytech.repository.ItemRepository;
 import com.api.v2.tastytech.repository.ItemTranslationRepository;
-import com.api.v2.tastytech.repository.LanguageRepository;
 import com.api.v2.tastytech.service.ItemService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -25,15 +23,13 @@ public class ItemServiceImpl implements ItemService {
 
     private final ItemRepository itemRepository;
     private final CategoryRepository categoryRepository;
-    private final LanguageRepository languageRepository;
     private final ItemTranslationRepository itemTranslationRepository;
     private final ItemConverter itemConverter;
 
-    public ItemServiceImpl(ItemRepository itemRepository, CategoryRepository categoryRepository, LanguageRepository languageRepository,
+    public ItemServiceImpl(ItemRepository itemRepository, CategoryRepository categoryRepository,
                            ItemTranslationRepository itemTranslationRepository, ItemConverter itemConverter) {
         this.itemRepository = itemRepository;
         this.categoryRepository = categoryRepository;
-        this.languageRepository = languageRepository;
         this.itemTranslationRepository = itemTranslationRepository;
         this.itemConverter = itemConverter;
     }
@@ -47,11 +43,13 @@ public class ItemServiceImpl implements ItemService {
 
         Item itemForSave = itemConverter.toEntity(itemDto);
         itemForSave.setCategory(category.get());
+
+        for (ItemTranslation translation : itemForSave.getTranslations()) {
+            translation.setItem(itemForSave);
+        }
+
         Item savedItem = itemRepository.save(itemForSave);
 
-        if(itemForSave.getTranslations() != null && !itemForSave.getTranslations().isEmpty()) {
-            this.saveItemTranslations(itemDto, itemForSave.getTranslations(), savedItem);
-        }
         return itemConverter.toDto(savedItem);
     }
 
@@ -103,15 +101,4 @@ public class ItemServiceImpl implements ItemService {
         itemRepository.delete(item.get());
     }
 
-    private void saveItemTranslations(ItemInputDto itemDto, List<ItemTranslation> translations, Item item) throws Exception {
-        for(int i = 0; i < itemDto.getTranslations().size(); i++) {
-            translations.get(i).setItem(item);
-            Optional<Language> language = languageRepository.findLanguageByCulturalCode(itemDto.getTranslations().get(i).getCulturalCode());
-            if (language.isEmpty()) {
-                throw new Exception("Unknown language!");
-            }
-            translations.get(i).setLanguage(language.get());
-            itemTranslationRepository.save(translations.get(i));
-        }
-    }
 }

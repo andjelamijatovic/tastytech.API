@@ -5,19 +5,25 @@ import com.api.v2.tastytech.domain.ItemTranslation;
 import com.api.v2.tastytech.domain.Language;
 import com.api.v2.tastytech.dto.ItemTranslationInputDto;
 import com.api.v2.tastytech.dto.ItemTranslationOutputDto;
+import com.api.v2.tastytech.repository.LanguageRepository;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Optional;
 
 @SpringBootTest
 public class ItemTranslationConverterTests {
 
     @Autowired
     private ItemTranslationConverter itemTranslationConverter;
+    @MockBean
+    private LanguageRepository languageRepository;
     private final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     @Test
@@ -48,13 +54,30 @@ public class ItemTranslationConverterTests {
 
         ItemTranslationInputDto translationDto = new ItemTranslationInputDto("lemonade",
                 "fresh summer drink", "en_US");
+        Language language = new Language(1l, "english", "en_US");
         ItemTranslation translation = new ItemTranslation(null, formatedDate, formatedDate, "lemonade",
-                "fresh summer drink", null, null);
+                "fresh summer drink", language, null);
 
+        Mockito.when(languageRepository.findLanguageByCulturalCode(translationDto.getCulturalCode())).thenReturn(Optional.of(language));
         ItemTranslation result = itemTranslationConverter.toEntity(translationDto);
 
         Assertions.assertNotNull(result);
         Assertions.assertEquals(translation, result);
+    }
+
+    @Test
+    public void toEntityUnknownLanguageTest() throws Exception {
+
+        ItemTranslationInputDto translationDto = new ItemTranslationInputDto("lemonade",
+                "fresh summer drink", "en_US");
+
+        Mockito.when(languageRepository.findLanguageByCulturalCode(translationDto.getCulturalCode())).thenReturn(Optional.empty());
+
+        Exception ex = Assertions.assertThrows(Exception.class, () -> {
+            itemTranslationConverter.toEntity(translationDto);
+        });
+
+        Assertions.assertEquals("Unknown language!", ex.getMessage());
     }
 
     @Test

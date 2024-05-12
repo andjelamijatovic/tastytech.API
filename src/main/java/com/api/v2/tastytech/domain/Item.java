@@ -19,7 +19,7 @@ public class Item {
     @ManyToOne()
     @JoinColumn(name = "category_id")
     private Category category;
-    @OneToMany(mappedBy = "item", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "item", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<ItemTranslation> translations;
 
     public Item() {

@@ -37,8 +37,8 @@ public class ItemServiceTests {
     private ItemRepository itemRepository;
     @MockBean
     private ItemTranslationRepository itemTranslationRepository;
-    @MockBean
-    private LanguageRepository languageRepository;
+//    @MockBean
+//    private LanguageRepository languageRepository;
 
     private final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
@@ -54,9 +54,9 @@ public class ItemServiceTests {
         ));
         Item itemForSave = new Item(null, formatedDate, formatedDate, 4.50, null, Arrays.asList(
                 new ItemTranslation(null, formatedDate, formatedDate, "lemonade",
-                        "fresh summer drink", null, null),
+                        "fresh summer drink", new Language(1l, "english", "en_US"), null),
                 new ItemTranslation(null, formatedDate, formatedDate, "limunada",
-                        "osvezavajuci napitak", null, null)
+                        "osvezavajuci napitak", new Language(2l, "serbian", "sr_SR"), null)
         ));
         Item savedItem = new Item(34l, new Date(),new Date(), 4.50, category, null);
         ItemOutputDto finalItemDto = new ItemOutputDto(34l, 4.50, Arrays.asList(
@@ -70,9 +70,6 @@ public class ItemServiceTests {
             return new ItemTranslation(translation.getId(), translation.getCreatedAt(), translation.getUpdatedAt(),
                     translation.getName(), translation.getDescription(), translation.getLanguage(), translation.getItem());
         });
-        Mockito.when(languageRepository.findLanguageByCulturalCode(ArgumentMatchers.anyString()))
-                .thenReturn(Optional.of(new Language(1l, "english", "en_EN")))
-                .thenReturn(Optional.of(new Language(2l, "serbian", "sr_SR")));
 
         Mockito.when(itemRepository.save(itemForSave)).thenReturn(savedItem);
         Mockito.when(itemConverter.toEntity(itemDto)).thenReturn(itemForSave);
@@ -101,7 +98,6 @@ public class ItemServiceTests {
 
     @Test
     public void saveItemUnknownLanguageTest() throws Exception {
-        Date formatedDate = sdf.parse(sdf.format(new Date()));
 
         Category category = new Category(2l, "soft drinks", "0% alcohol", new Date(), new Date(),
                 null, null, null, null);
@@ -109,17 +105,8 @@ public class ItemServiceTests {
                 new ItemTranslationInputDto("lemonade", "fresh summer drink", "en_US"),
                 new ItemTranslationInputDto("limunada", "osvezavajuci napitak", "sr_SR")
         ));
-        Item itemForSave = new Item(null, formatedDate, formatedDate, 4.50, null, Arrays.asList(
-                new ItemTranslation(null, formatedDate, formatedDate, "lemonade",
-                        "fresh summer drink", null, null),
-                new ItemTranslation(null, formatedDate, formatedDate, "limunada",
-                        "osvezavajuci napitak", null, null)
-        ));
-        Item savedItem = new Item(34l, new Date(),new Date(), 4.50, category, null);
 
-        Mockito.when(languageRepository.findLanguageByCulturalCode(ArgumentMatchers.anyString())).thenReturn(Optional.empty());
-        Mockito.when(itemRepository.save(itemForSave)).thenReturn(savedItem);
-        Mockito.when(itemConverter.toEntity(itemDto)).thenReturn(itemForSave);
+        Mockito.doThrow(new Exception("Unknown language!")).when(itemConverter).toEntity(itemDto);
         Mockito.when(categoryRepository.findById(2l)).thenReturn(Optional.of(category));
 
         Exception ex = Assertions.assertThrows(Exception.class, () -> {

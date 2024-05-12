@@ -55,7 +55,9 @@ public class CategoryItemController {
     //GET: category/{id}/item/{id}
     @Operation(summary = "GET item by its id")
     @GetMapping("/{categoryId}/item/{id}")
-    public ResponseEntity<ItemOutputDto> findCategoryById(@PathVariable("id") Long id) throws Exception {
+    public ResponseEntity<ItemOutputDto> findCategoryById(
+            @PathVariable("categoryId") Long categoryId,
+            @PathVariable("id") Long id) throws Exception {
         ItemOutputDto item = itemService.getById(id);
         return new ResponseEntity<>(item, HttpStatus.OK);
     }
@@ -63,7 +65,10 @@ public class CategoryItemController {
     //PUT: category/{id}/item/{id}
     @Operation(summary = "UPDATE category item")
     @PutMapping("/{categoryId}/item/{id}")
-    public ResponseEntity<ItemOutputDto> update(@PathVariable("id") Long id, ItemInputDto itemDto) throws Exception {
+    public ResponseEntity<ItemOutputDto> update(
+            @PathVariable("categoryId") Long categoryId,
+            @PathVariable("id") Long id,
+            ItemInputDto itemDto) throws Exception {
         ItemOutputDto item = itemService.update(id, itemDto);
         return new ResponseEntity<>(item, HttpStatus.OK);
     }
@@ -71,7 +76,9 @@ public class CategoryItemController {
     //DELETE: category/{id}/item/{id}
     @Operation(summary = "DELETE item by its id")
     @DeleteMapping("/{categoryId}/item/{id}")
-    public ResponseEntity<String> deleteCategory(@PathVariable("id") Long id) throws Exception {
+    public ResponseEntity<String> deleteCategory(
+            @PathVariable("categoryId") Long categoryId,
+            @PathVariable("id") Long id) throws Exception {
         itemService.delete(id);
         return new ResponseEntity<>("Item successfully removed!", HttpStatus.OK);
     }
