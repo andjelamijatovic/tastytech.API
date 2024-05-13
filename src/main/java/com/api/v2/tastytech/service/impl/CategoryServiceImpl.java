@@ -1,10 +1,8 @@
 package com.api.v2.tastytech.service.impl;
 
 import com.api.v2.tastytech.converter.impl.CategoryConverter;
-import com.api.v2.tastytech.domain.Category;
-import com.api.v2.tastytech.domain.CategoryTranslation;
-import com.api.v2.tastytech.domain.Language;
-import com.api.v2.tastytech.domain.Menu;
+import com.api.v2.tastytech.converter.impl.CategoryTranslationConverter;
+import com.api.v2.tastytech.domain.*;
 import com.api.v2.tastytech.dto.CategoryInputDto;
 import com.api.v2.tastytech.dto.CategoryOutputDto;
 import com.api.v2.tastytech.repository.CategoryRepository;
@@ -16,8 +14,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -25,17 +22,13 @@ public class CategoryServiceImpl implements CategoryService {
 
     private final CategoryRepository categoryRepository;
     private final MenuRepository menuRepository;
-    private final LanguageRepository languageRepository;
     private final CategoryConverter categoryConverter;
-    private final CategoryTranslationRepository categoryTranslationRepository;
 
-    public CategoryServiceImpl(CategoryRepository categoryRepository, MenuRepository menuRepository, LanguageRepository languageRepository,
-                               CategoryConverter categoryConverter, CategoryTranslationRepository categoryTranslationRepository) {
+    public CategoryServiceImpl(CategoryRepository categoryRepository, MenuRepository menuRepository,
+                               CategoryConverter categoryConverter) {
         this.categoryRepository = categoryRepository;
         this.menuRepository = menuRepository;
-        this.languageRepository = languageRepository;
         this.categoryConverter = categoryConverter;
-        this.categoryTranslationRepository = categoryTranslationRepository;
     }
 
     @Override
@@ -106,8 +99,28 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public CategoryOutputDto update(Long id, CategoryInputDto categoryDto) throws Exception {
-        // TODO: implement update method of Category entity
-        return null;
+        Optional<Category> category = categoryRepository.findById(id);
+        if (category.isEmpty()) {
+            throw new Exception("Category doesn't exist!");
+        }
+
+        Optional<Category> parentCategory = null;
+        if (categoryDto.getParentCategoryId() != null) {
+            parentCategory = categoryRepository.findById(categoryDto.getParentCategoryId());
+            if (parentCategory.isEmpty()) {
+                throw new Exception("Selected parent category doesn't exist!");
+            }
+        }
+
+        Category categoryForUpdate = categoryConverter.toEntity(categoryDto);
+        categoryForUpdate.setId(id);
+        categoryForUpdate.setMenu(category.get().getMenu());
+        categoryForUpdate.setParentCategory((parentCategory != null) ? parentCategory.get() : null);
+        updateCategoryTranslations(category.get(), categoryForUpdate);
+
+        Category updatedCategory = categoryRepository.save(categoryForUpdate);
+
+        return categoryConverter.toDto(updatedCategory);
     }
 
     @Override
@@ -119,20 +132,33 @@ public class CategoryServiceImpl implements CategoryService {
         categoryRepository.delete(category.get());
     }
 
-//    private void saveCategoryTranslations(CategoryInputDto categoryDto, List<CategoryTranslation> translations, Category category) throws Exception {
-//        //category.setTranslations(new ArrayList<>());
-//        for (int i = 0; i < categoryDto.getTranslations().size(); i++) {
-//            translations.get(i).setCategory(category);
-//            Optional<Language> language = languageRepository.findLanguageByCulturalCode(categoryDto
-//                    .getTranslations().
-//                    get(i)
-//                    .getCulturalCode());
-//            if (language.isEmpty()) {
-//                throw new Exception("Unknown language!");
-//            }
-//            translations.get(i).setLanguage(language.get());
-//            categoryTranslationRepository.save(translations.get(i));
-//        }
-//    }
 
+    private void updateCategoryTranslations(Category dbCategory, Category categoryForUpdate) {
+
+        Map<String, CategoryTranslation> dbTranslationsMap = new HashMap<>();
+        dbCategory.getTranslations().forEach(translation -> dbTranslationsMap.put(translation.getTranslation(), translation));
+
+        for(CategoryTranslation translation: categoryForUpdate.getTranslations()) {
+            translation.setCategory(categoryForUpdate);
+
+            CategoryTranslation dbTranslation = dbTranslationsMap.get(translation.getTranslation());
+            if(dbTranslation != null) {
+                translation.setId(dbTranslation.getId());
+                dbTranslationsMap.remove(translation.getTranslation());
+            }
+        }
+
+        if(!dbTranslationsMap.isEmpty()) {
+
+            Iterator<CategoryTranslation> iterator = dbCategory.getTranslations().iterator();
+
+            while (iterator.hasNext()) {
+                CategoryTranslation translation = iterator.next();
+
+                if(dbTranslationsMap.containsKey(translation.getTranslation())) {
+                    translation.setCategory(null);
+                }
+            }
+        }
+    }
 }

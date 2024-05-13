@@ -31,10 +31,6 @@ public class CategoryServiceTests {
     @MockBean
     private CategoryRepository categoryRepository;
     @MockBean
-    private LanguageRepository languageRepository;
-    @MockBean
-    private CategoryTranslationRepository categoryTranslationRepository;
-    @MockBean
     private CategoryConverter categoryConverter;
     private final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
@@ -68,14 +64,6 @@ public class CategoryServiceTests {
         ), null);
 
         Mockito.when(categoryConverter.toDto(savedCategory)).thenReturn(finalCategoryDto);
-//        Mockito.when(categoryTranslationRepository.save(ArgumentMatchers.any(CategoryTranslation.class))).thenAnswer(invocationOnMock -> {
-//            CategoryTranslation translation = invocationOnMock.getArgument(0);
-//            return new CategoryTranslation(translation.getId(), translation.getCreatedAt(), translation.getUpdatedAt(), translation.getTranslation(),
-//                    translation.getDescription(), translation.getLanguage(), translation.getCategory());
-//        });
-//        Mockito.when(languageRepository.findLanguageByCulturalCode(ArgumentMatchers.anyString()))
-//                .thenReturn(Optional.of(new Language(1l, "english", "en_EN")))
-//                .thenReturn(Optional.of(new Language(2l, "serbian", "sr_SR")));
         Mockito.when(categoryRepository.save(categoryForSave)).thenReturn(savedCategory);
         Mockito.when(categoryConverter.toEntity(categoryDto)).thenReturn(categoryForSave);
         Mockito.when(categoryRepository.findById(categoryDto.getParentCategoryId())).thenReturn(Optional.of(parentCategory));

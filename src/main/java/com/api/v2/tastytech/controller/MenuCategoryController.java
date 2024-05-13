@@ -123,21 +123,28 @@ public class MenuCategoryController {
 
     @Operation(summary = "GET category by its id")
     @GetMapping("/{menuId}/category/{id}")
-    public ResponseEntity<CategoryOutputDto> findCategoryById(@PathVariable("id") Long id) throws Exception {
+    public ResponseEntity<CategoryOutputDto> findCategoryById(
+            @PathVariable("menuId") Long menuId,
+            @PathVariable("id") Long id) throws Exception {
         CategoryOutputDto category = categoryService.getById(id);
         return new ResponseEntity<>(category, HttpStatus.OK);
     }
 
     @Operation(summary = "UPDATE menu category")
     @PutMapping("/{menuId}/category/{id}")
-    public ResponseEntity<CategoryOutputDto> updateCategory(@PathVariable("id") Long id, CategoryInputDto categoryDto) throws Exception {
+    public ResponseEntity<CategoryOutputDto> updateCategory(
+            @PathVariable("menuId") Long menuId,
+            @PathVariable("id") Long id,
+            @RequestBody CategoryInputDto categoryDto) throws Exception {
         CategoryOutputDto category = categoryService.update(id, categoryDto);
         return new ResponseEntity<>(category, HttpStatus.OK);
     }
 
     @Operation(summary = "DELETE category by its id")
     @DeleteMapping("/{menuId}/category/{id}")
-    public ResponseEntity<String> deleteCategory(@PathVariable("id") Long id) throws Exception {
+    public ResponseEntity<String> deleteCategory(
+            @PathVariable("menuId") Long menuId,
+            @PathVariable("id") Long id) throws Exception {
         categoryService.delete(id);
         return new ResponseEntity<>("Category successfully removed!", HttpStatus.OK);
     }
