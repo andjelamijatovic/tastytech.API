@@ -41,7 +41,7 @@ public class CategoryItemController {
 
     //GET: category/{id}/paging
     @Operation(summary = "GET all items by category's id - PAGEABLE")
-    @GetMapping("/{categoryId}/paging")
+    @GetMapping("/{categoryId}/item/paging")
     public ResponseEntity<Page<ItemOutputDto>> findAllItemsByPage(
             @PathVariable("categoryId") Long id,
             @RequestParam(name = "page", defaultValue = "0") int page,
@@ -68,7 +68,7 @@ public class CategoryItemController {
     public ResponseEntity<ItemOutputDto> update(
             @PathVariable("categoryId") Long categoryId,
             @PathVariable("id") Long id,
-            ItemInputDto itemDto) throws Exception {
+            @RequestBody ItemInputDto itemDto) throws Exception {
         ItemOutputDto item = itemService.update(id, itemDto);
         return new ResponseEntity<>(item, HttpStatus.OK);
     }
