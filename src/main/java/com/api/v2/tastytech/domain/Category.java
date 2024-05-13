@@ -23,7 +23,7 @@ public class Category {
     @ManyToOne()
     @JoinColumn(name = "menu_id")
     private Menu menu;
-    @OneToMany(mappedBy = "category", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "category", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private List<CategoryTranslation> translations;
     @OneToMany(mappedBy = "category", fetch = FetchType.EAGER)
     private List<Item> items;

@@ -59,12 +59,13 @@ public class CategoryServiceImpl implements CategoryService {
         categoryForSave.setMenu(menu.get());
         // set the parent category
         categoryForSave.setParentCategory((parentCategory != null) ? parentCategory.get() : null);
+        // set category id to all translations
+        for(CategoryTranslation translation: categoryForSave.getTranslations()) {
+            translation.setCategory(categoryForSave);
+        }
         // save category
         Category savedCategory = categoryRepository.save(categoryForSave);
-        // set language and category id to all translations
-        if(categoryForSave.getTranslations() != null && !categoryForSave.getTranslations().isEmpty()) {
-            this.saveCategoryTranslations(categoryDto, categoryForSave.getTranslations(), savedCategory);
-        }
+
         // return category converted category
         return categoryConverter.toDto(savedCategory);
     }
@@ -118,20 +119,20 @@ public class CategoryServiceImpl implements CategoryService {
         categoryRepository.delete(category.get());
     }
 
-    private void saveCategoryTranslations(CategoryInputDto categoryDto, List<CategoryTranslation> translations, Category category) throws Exception {
-        //category.setTranslations(new ArrayList<>());
-        for (int i = 0; i < categoryDto.getTranslations().size(); i++) {
-            translations.get(i).setCategory(category);
-            Optional<Language> language = languageRepository.findLanguageByCulturalCode(categoryDto
-                    .getTranslations().
-                    get(i)
-                    .getCulturalCode());
-            if (language.isEmpty()) {
-                throw new Exception("Unknown language!");
-            }
-            translations.get(i).setLanguage(language.get());
-            categoryTranslationRepository.save(translations.get(i));
-        }
-    }
+//    private void saveCategoryTranslations(CategoryInputDto categoryDto, List<CategoryTranslation> translations, Category category) throws Exception {
+//        //category.setTranslations(new ArrayList<>());
+//        for (int i = 0; i < categoryDto.getTranslations().size(); i++) {
+//            translations.get(i).setCategory(category);
+//            Optional<Language> language = languageRepository.findLanguageByCulturalCode(categoryDto
+//                    .getTranslations().
+//                    get(i)
+//                    .getCulturalCode());
+//            if (language.isEmpty()) {
+//                throw new Exception("Unknown language!");
+//            }
+//            translations.get(i).setLanguage(language.get());
+//            categoryTranslationRepository.save(translations.get(i));
+//        }
+//    }
 
 }

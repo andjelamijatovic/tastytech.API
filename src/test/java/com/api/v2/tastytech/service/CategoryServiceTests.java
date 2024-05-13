@@ -50,25 +50,32 @@ public class CategoryServiceTests {
         Category parentCategory = new Category(1l, "drinks", "", new Date(), new Date(), null, menu, null, null);
         Category categoryForSave = new Category(null, "soft drinks", "", formatedDate, formatedDate, null, null,
                 Arrays.asList(
-                        new CategoryTranslation(null, formatedDate, formatedDate, "soft drinks", "", null, null),
-                        new CategoryTranslation(null, formatedDate, formatedDate, "bezalkoholna pica", "", null, null)
+                        new CategoryTranslation(null, formatedDate, formatedDate, "soft drinks", "",
+                                new Language(1l, "english", "en_EN"), null),
+                        new CategoryTranslation(null, formatedDate, formatedDate, "bezalkoholna pica", "",
+                                new Language(2l, "serbian", "sr_SR"), null)
                 ), null);
         Category savedCategory = new Category(7l, "soft drinks", "", formatedDate, formatedDate,
-                parentCategory, menu, null, null);
+                parentCategory, menu, Arrays.asList(
+                        new CategoryTranslation(7l, formatedDate, formatedDate, "soft drinks", "",
+                                new Language(1l, "english", "en_EN"), categoryForSave),
+                        new CategoryTranslation(8l, formatedDate, formatedDate, "bezalkoholna pica", "",
+                                new Language(2l, "serbian", "sr_SR"), categoryForSave)
+                ),null);
         CategoryOutputDto finalCategoryDto = new CategoryOutputDto(7l, "soft drinks", "", "drinks", Arrays.asList(
                 new CategoryTranslationOutputDto("soft drinks", "", "english", "en_EN"),
                 new CategoryTranslationOutputDto("bezalkoholna pica", "", "serbian", "sr_SR")
         ), null);
 
         Mockito.when(categoryConverter.toDto(savedCategory)).thenReturn(finalCategoryDto);
-        Mockito.when(categoryTranslationRepository.save(ArgumentMatchers.any(CategoryTranslation.class))).thenAnswer(invocationOnMock -> {
-            CategoryTranslation translation = invocationOnMock.getArgument(0);
-            return new CategoryTranslation(translation.getId(), translation.getCreatedAt(), translation.getUpdatedAt(), translation.getTranslation(),
-                    translation.getDescription(), translation.getLanguage(), translation.getCategory());
-        });
-        Mockito.when(languageRepository.findLanguageByCulturalCode(ArgumentMatchers.anyString()))
-                .thenReturn(Optional.of(new Language(1l, "english", "en_EN")))
-                .thenReturn(Optional.of(new Language(2l, "serbian", "sr_SR")));
+//        Mockito.when(categoryTranslationRepository.save(ArgumentMatchers.any(CategoryTranslation.class))).thenAnswer(invocationOnMock -> {
+//            CategoryTranslation translation = invocationOnMock.getArgument(0);
+//            return new CategoryTranslation(translation.getId(), translation.getCreatedAt(), translation.getUpdatedAt(), translation.getTranslation(),
+//                    translation.getDescription(), translation.getLanguage(), translation.getCategory());
+//        });
+//        Mockito.when(languageRepository.findLanguageByCulturalCode(ArgumentMatchers.anyString()))
+//                .thenReturn(Optional.of(new Language(1l, "english", "en_EN")))
+//                .thenReturn(Optional.of(new Language(2l, "serbian", "sr_SR")));
         Mockito.when(categoryRepository.save(categoryForSave)).thenReturn(savedCategory);
         Mockito.when(categoryConverter.toEntity(categoryDto)).thenReturn(categoryForSave);
         Mockito.when(categoryRepository.findById(categoryDto.getParentCategoryId())).thenReturn(Optional.of(parentCategory));
@@ -97,7 +104,7 @@ public class CategoryServiceTests {
     }
 
     @Test
-    public void saveCategoryFindParentCategoryTest() {
+    public void saveCategoryCantFindParentCategoryTest() {
 
         Menu menu = new Menu(1l, new Date(), new Date(), "My Menu",
                 new Brand(1l, "Brand New", new Date(), new Date()), null);
@@ -117,7 +124,6 @@ public class CategoryServiceTests {
 
     @Test
     public void saveCategoryUnknownLanguageTest() throws Exception {
-        Date formatedDate = sdf.parse(sdf.format(new Date()));
         Menu menu = new Menu(1l, new Date(), new Date(), "My Menu",
                 new Brand(1l, "Brand New", new Date(), new Date()), null);
         CategoryInputDto categoryDto = new CategoryInputDto("soft drinks", "", 1l, Arrays.asList(
@@ -125,17 +131,8 @@ public class CategoryServiceTests {
                 new CategoryTranslationInputDto("bezalkoholna pica", "", "sr_SR")
         ));
         Category parentCategory = new Category(1l, "drinks", "", new Date(), new Date(), null, menu, null, null);
-        Category categoryForSave = new Category(null, "soft drinks", "", formatedDate, formatedDate, null, null,
-                Arrays.asList(
-                        new CategoryTranslation(null, formatedDate, formatedDate, "soft drinks", "", null, null),
-                        new CategoryTranslation(null, formatedDate, formatedDate, "bezalkoholna pica", "", null, null)
-                ), null);
-        Category savedCategory = new Category(7l, "soft drinks", "", formatedDate, formatedDate,
-                parentCategory, menu, null, null);
 
-        Mockito.when(languageRepository.findLanguageByCulturalCode(ArgumentMatchers.anyString())).thenReturn(Optional.empty());
-        Mockito.when(categoryRepository.save(categoryForSave)).thenReturn(savedCategory);
-        Mockito.when(categoryConverter.toEntity(categoryDto)).thenReturn(categoryForSave);
+        Mockito.doThrow(new Exception("Unknown language!")).when(categoryConverter).toEntity(categoryDto);
         Mockito.when(categoryRepository.findById(categoryDto.getParentCategoryId())).thenReturn(Optional.of(parentCategory));
         Mockito.when(menuRepository.findById(1l)).thenReturn(Optional.of(menu));
 
