@@ -11,8 +11,6 @@ import com.api.v2.tastytech.dto.ItemTranslationInputDto;
 import com.api.v2.tastytech.dto.ItemTranslationOutputDto;
 import com.api.v2.tastytech.repository.CategoryRepository;
 import com.api.v2.tastytech.repository.ItemRepository;
-import com.api.v2.tastytech.repository.ItemTranslationRepository;
-import com.api.v2.tastytech.repository.LanguageRepository;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
@@ -35,10 +33,6 @@ public class ItemServiceTests {
     private ItemConverter itemConverter;
     @MockBean
     private ItemRepository itemRepository;
-    @MockBean
-    private ItemTranslationRepository itemTranslationRepository;
-//    @MockBean
-//    private LanguageRepository languageRepository;
 
     private final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
@@ -58,19 +52,18 @@ public class ItemServiceTests {
                 new ItemTranslation(null, formatedDate, formatedDate, "limunada",
                         "osvezavajuci napitak", new Language(2l, "serbian", "sr_SR"), null)
         ));
-        Item savedItem = new Item(34l, new Date(),new Date(), 4.50, category, null);
+        Item savedItem = new Item(34l, new Date(),new Date(), 4.50, category, Arrays.asList(
+                new ItemTranslation(22l, new Date(), new Date(), "lemonade", "fresh summer drink",
+                        new Language(1l, "english", "en_US"), itemForSave),
+                new ItemTranslation(23l, new Date(), new Date(), "limunada", "osvezavajuci napitak",
+                        new Language(2l, "serbian", "sr_SR"), itemForSave)
+        ));
         ItemOutputDto finalItemDto = new ItemOutputDto(34l, 4.50, Arrays.asList(
                 new ItemTranslationOutputDto("lemonade", "fresh summer drink", "english", "en_EN"),
                 new ItemTranslationOutputDto("limunada", "osvezavajuci napitak", "serbian", "sr_SR")
         ));
 
         Mockito.when(itemConverter.toDto(savedItem)).thenReturn(finalItemDto);
-        Mockito.when(itemTranslationRepository.save(ArgumentMatchers.any(ItemTranslation.class))).thenAnswer(invocationOnMock -> {
-            ItemTranslation translation = invocationOnMock.getArgument(0);
-            return new ItemTranslation(translation.getId(), translation.getCreatedAt(), translation.getUpdatedAt(),
-                    translation.getName(), translation.getDescription(), translation.getLanguage(), translation.getItem());
-        });
-
         Mockito.when(itemRepository.save(itemForSave)).thenReturn(savedItem);
         Mockito.when(itemConverter.toEntity(itemDto)).thenReturn(itemForSave);
         Mockito.when(categoryRepository.findById(2l)).thenReturn(Optional.of(category));
@@ -234,6 +227,151 @@ public class ItemServiceTests {
             itemService.getById(34l);
         });
         Assertions.assertEquals("Item doesn't exist!", ex.getMessage());
+    }
+
+    @Test
+    public void updateItemSuccessfullyTest() throws Exception {
+        Date formatedDate = sdf.parse(sdf.format(new Date()));
+
+        Category category = new Category(2l, "soft drinks", "0% alcohol", new Date(), new Date(),
+                null, null, null, null);
+        Item dbItem = new Item(1l, new Date(), new Date(), 4.5, category, Arrays.asList(
+                new ItemTranslation(1l, new Date(), new Date(), "lemonade", "",
+                        new Language(1l, "english", "en_US"), null),
+                new ItemTranslation(2l, new Date(), new Date(), "limunada", "",
+                        new Language(2l, "serbian", "sr_SR"), null)
+        ));
+        ItemInputDto itemDto = new ItemInputDto(4.50, Arrays.asList(
+                new ItemTranslationInputDto("lemonade", "fresh summer drink", "en_US"),
+                new ItemTranslationInputDto("limunada", "osvezavajuci napitak", "sr_SR")
+        ));
+        Item itemForUpdate = new Item(null, formatedDate, formatedDate, 4.50, null, Arrays.asList(
+                new ItemTranslation(null, formatedDate, formatedDate, "lemonade",
+                        "fresh summer drink", new Language(1l, "english", "en_US"), null),
+                new ItemTranslation(null, formatedDate, formatedDate, "limunada",
+                        "osvezavajuci napitak", new Language(2l, "serbian", "sr_SR"), null)
+        ));
+        Item updatedItem = new Item(1l, new Date(),new Date(), 4.50, category, Arrays.asList(
+                new ItemTranslation(1l, new Date(), new Date(), "lemonade", "fresh summer drink",
+                        new Language(1l, "english", "en_US"), itemForUpdate),
+                new ItemTranslation(2l, new Date(), new Date(), "limunada", "osvezavajuci napitak",
+                        new Language(2l, "serbian", "sr_SR"), itemForUpdate)
+        ));
+        ItemOutputDto finalItemDto = new ItemOutputDto(34l, 4.50, Arrays.asList(
+                new ItemTranslationOutputDto("lemonade", "fresh summer drink", "english", "en_EN"),
+                new ItemTranslationOutputDto("limunada", "osvezavajuci napitak", "serbian", "sr_SR")
+        ));
+
+        Mockito.when(itemConverter.toDto(updatedItem)).thenReturn(finalItemDto);
+        Mockito.when(itemRepository.save(itemForUpdate)).thenReturn(updatedItem);
+        Mockito.when(itemConverter.toEntity(itemDto)).thenReturn(itemForUpdate);
+        Mockito.when(itemRepository.findById(1l)).thenReturn(Optional.of(dbItem));
+
+        ItemOutputDto result = itemService.update(1l, itemDto);
+
+        Assertions.assertNotNull(result);
+        Assertions.assertEquals(finalItemDto, result);
+    }
+
+    @Test
+    public void updateItemSuccessfullyMoreTranslationThanInDatabaseTest() throws Exception {
+        Date formatedDate = sdf.parse(sdf.format(new Date()));
+
+        Category category = new Category(2l, "soft drinks", "0% alcohol", new Date(), new Date(),
+                null, null, null, null);
+        Item dbItem = new Item(1l, new Date(), new Date(), 4.5, category, Arrays.asList(
+                new ItemTranslation(1l, new Date(), new Date(), "lemonade", "",
+                        new Language(1l, "english", "en_US"), null),
+                new ItemTranslation(2l, new Date(), new Date(), "limunada", "",
+                        new Language(2l, "serbian", "sr_SR"), null)
+        ));
+        ItemInputDto itemDto = new ItemInputDto(4.50, Arrays.asList(
+                new ItemTranslationInputDto("lemonade", "fresh summer drink", "en_US"),
+                new ItemTranslationInputDto("limunada", "osvezavajuci napitak", "sr_SR"),
+                new ItemTranslationInputDto("limonata", "bevanda estiva fresca", "it_IT")
+        ));
+        Item itemForUpdate = new Item(null, formatedDate, formatedDate, 4.50, null, Arrays.asList(
+                new ItemTranslation(null, formatedDate, formatedDate, "lemonade",
+                        "fresh summer drink", new Language(1l, "english", "en_US"), null),
+                new ItemTranslation(null, formatedDate, formatedDate, "limunada",
+                        "osvezavajuci napitak", new Language(2l, "serbian", "sr_SR"), null),
+                new ItemTranslation(null, formatedDate, formatedDate, "limonata",
+                        "bevanda estiva fresca", new Language(3l, "italian", "it_IT"), null)
+        ));
+        Item updatedItem = new Item(1l, new Date(),new Date(), 4.50, category, Arrays.asList(
+                new ItemTranslation(1l, new Date(), new Date(), "lemonade", "fresh summer drink",
+                        new Language(1l, "english", "en_US"), itemForUpdate),
+                new ItemTranslation(2l, new Date(), new Date(), "limunada", "osvezavajuci napitak",
+                        new Language(2l, "serbian", "sr_SR"), itemForUpdate),
+                new ItemTranslation(null, new Date(), new Date(), "limonata", "bevanda estiva fresca",
+                        new Language(3l, "italian", "it_IT"), itemForUpdate)
+        ));
+        ItemOutputDto finalItemDto = new ItemOutputDto(34l, 4.50, Arrays.asList(
+                new ItemTranslationOutputDto("lemonade", "fresh summer drink", "english", "en_EN"),
+                new ItemTranslationOutputDto("limunada", "osvezavajuci napitak", "serbian", "sr_SR"),
+                new ItemTranslationOutputDto("limonata", "bevanda estiva fresca", "italian", "it_IT")
+        ));
+
+        Mockito.when(itemConverter.toDto(updatedItem)).thenReturn(finalItemDto);
+        Mockito.when(itemRepository.save(itemForUpdate)).thenReturn(updatedItem);
+        Mockito.when(itemConverter.toEntity(itemDto)).thenReturn(itemForUpdate);
+        Mockito.when(itemRepository.findById(1l)).thenReturn(Optional.of(dbItem));
+
+        ItemOutputDto result = itemService.update(1l, itemDto);
+
+        Assertions.assertNotNull(result);
+        Assertions.assertEquals(finalItemDto, result);
+    }
+
+    @Test
+    public void updateItemCantFindItemTest() throws Exception {
+        ItemInputDto itemDto = new ItemInputDto(4.50, Arrays.asList(
+                new ItemTranslationInputDto("lemonade", "fresh summer drink", "en_US"),
+                new ItemTranslationInputDto("limunada", "osvezavajuci napitak", "sr_SR")
+        ));
+
+        Mockito.when(itemRepository.findById(2l)).thenReturn(Optional.empty());
+
+        Exception ex = Assertions.assertThrows(Exception.class, () -> {
+            itemService.update(2l, itemDto);
+        });
+        Assertions.assertEquals("Item doesn't exist!", ex.getMessage());
+    }
+
+    @Test
+    public void updateItemUnknownLanguageTest() throws Exception {
+
+        Item item = new Item(1l, new Date(), new Date(), 4.5, new Category(), Arrays.asList(
+                new ItemTranslation(1l, new Date(), new Date(), "lemonade", "", new Language(1l, "english", "en_US"), null),
+                new ItemTranslation(2l, new Date(), new Date(), "limunada", "", new Language(2l, "serbian", "sr_SR"), null)
+        ));
+        ItemInputDto itemDto = new ItemInputDto(4.50, Arrays.asList(
+                new ItemTranslationInputDto("lemonade", "fresh summer drink", "en_US"),
+                new ItemTranslationInputDto("limunada", "osvezavajuci napitak", "sr_SR")
+        ));
+
+        Mockito.doThrow(new Exception("Unknown language!")).when(itemConverter).toEntity(itemDto);
+        Mockito.when(itemRepository.findById(1l)).thenReturn(Optional.of(item));
+
+        Exception ex = Assertions.assertThrows(Exception.class, () -> {
+            itemService.update(1l, itemDto);
+        });
+        Assertions.assertEquals("Unknown language!", ex.getMessage());
+    }
+
+    @Test
+    public void updateItemDtoIsNullTest() throws Exception {
+        Item item = new Item(1l, new Date(), new Date(), 4.5, new Category(), Arrays.asList(
+                new ItemTranslation(1l, new Date(), new Date(), "juice", "", new Language(1l, "english", "en_US"), null),
+                new ItemTranslation(2l, new Date(), new Date(), "sok", "", new Language(2l, "serbian", "sr_SR"), null)
+        ));
+
+        Mockito.when(itemRepository.findById(1l)).thenReturn(Optional.of(item));
+
+        Exception ex = Assertions.assertThrows(NullPointerException.class, () -> {
+            itemService.update(1l, null);
+        });
+        Assertions.assertInstanceOf(NullPointerException.class, ex);
     }
 
     @Test

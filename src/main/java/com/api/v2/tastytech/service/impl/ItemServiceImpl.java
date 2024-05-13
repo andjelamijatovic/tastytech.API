@@ -8,14 +8,12 @@ import com.api.v2.tastytech.dto.ItemInputDto;
 import com.api.v2.tastytech.dto.ItemOutputDto;
 import com.api.v2.tastytech.repository.CategoryRepository;
 import com.api.v2.tastytech.repository.ItemRepository;
-import com.api.v2.tastytech.repository.ItemTranslationRepository;
 import com.api.v2.tastytech.service.ItemService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -23,14 +21,12 @@ public class ItemServiceImpl implements ItemService {
 
     private final ItemRepository itemRepository;
     private final CategoryRepository categoryRepository;
-    private final ItemTranslationRepository itemTranslationRepository;
     private final ItemConverter itemConverter;
 
     public ItemServiceImpl(ItemRepository itemRepository, CategoryRepository categoryRepository,
-                           ItemTranslationRepository itemTranslationRepository, ItemConverter itemConverter) {
+                           ItemConverter itemConverter) {
         this.itemRepository = itemRepository;
         this.categoryRepository = categoryRepository;
-        this.itemTranslationRepository = itemTranslationRepository;
         this.itemConverter = itemConverter;
     }
 
@@ -88,8 +84,19 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public ItemOutputDto update(Long id, ItemInputDto itemDto) throws Exception {
-        // TODO: implement update method for Item entity
-        return null;
+        Optional<Item> item = itemRepository.findById(id);
+        if (item.isEmpty()) {
+            throw new Exception("Item doesn't exist!");
+        }
+
+        Item itemForUpdate = itemConverter.toEntity(itemDto);
+        itemForUpdate.setId(id);
+        itemForUpdate.setCategory(item.get().getCategory());
+        updateItemTranslations(item.get(), itemForUpdate);
+
+        Item updatedItem = itemRepository.save(itemForUpdate);
+
+        return itemConverter.toDto(updatedItem);
     }
 
     @Override
@@ -99,6 +106,35 @@ public class ItemServiceImpl implements ItemService {
             throw new Exception("Item doesn't exist!");
         }
         itemRepository.delete(item.get());
+    }
+
+    private void updateItemTranslations(Item dbItem, Item itemForUpdate) {
+
+        Map<String, ItemTranslation> dbTranslationsMap = new HashMap<>();
+        dbItem.getTranslations().forEach(translation -> dbTranslationsMap.put(translation.getName(), translation));
+
+        for(ItemTranslation translation: itemForUpdate.getTranslations()) {
+            translation.setItem(itemForUpdate);
+
+            ItemTranslation dbTranslation = dbTranslationsMap.get(translation.getName());
+            if(dbTranslation != null) {
+                translation.setId(dbTranslation.getId());
+                dbTranslationsMap.remove(translation.getName());
+            }
+        }
+
+        if(!dbTranslationsMap.isEmpty()) {
+
+            Iterator<ItemTranslation> iterator = dbItem.getTranslations().iterator();
+
+            while (iterator.hasNext()) {
+                ItemTranslation translation = iterator.next();
+
+                if(dbTranslationsMap.containsKey(translation.getName())) {
+                    translation.setItem(null);
+                }
+            }
+        }
     }
 
 }
